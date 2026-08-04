@@ -4,7 +4,11 @@
 
 # The Librarium
 
-A local LLM chat orchestrator for Obsidian powered by Ollama.
+### A local LLM chat orchestrator for Obsidian powered by Ollama
+
+<p>
+  Give your local AI persistent, scalable memory through hierarchical context retrieval.
+</p>
 
 <a href="https://ko-fi.com/natthapolmnc">
   <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support The Librarium on Ko-fi">
@@ -12,6 +16,7 @@ A local LLM chat orchestrator for Obsidian powered by Ollama.
 
 </div>
 
+---
 
 **The Librarium** is a local-LLM chat orchestrator for [Obsidian](https://obsidian.md), backed by [Ollama](https://ollama.com). It keeps topic-separated memory as a fixed stack of progressively more detailed layers — from a quick Overview down to a Comprehensive Summary, plus the raw Original — routes each chat query to only the relevant topics, and searches that layer stack starting from the least detail, loading more only when it's actually needed.
 
