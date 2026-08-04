@@ -1,13 +1,36 @@
 import fs from "fs";
 
-const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
-const versions = JSON.parse(fs.readFileSync("versions.json", "utf8"));
+const version = process.argv[2];
 
-versions[manifest.version] = manifest.minAppVersion;
+if (!version) {
+	console.error("Usage: node scripts/update-version.mjs <version>");
+	process.exit(1);
+}
 
-fs.writeFileSync(
-	"versions.json",
-	JSON.stringify(versions, null, 2) + "\n"
-);
+function updateJsonFile(path, updater) {
+	const data = JSON.parse(fs.readFileSync(path, "utf8"));
+	updater(data);
 
-console.log(`Updated versions.json: ${manifest.version}`);
+	fs.writeFileSync(
+		path,
+		JSON.stringify(data, null, 2) + "\n"
+	);
+}
+
+// Update manifest.json
+updateJsonFile("manifest.json", (manifest) => {
+	manifest.version = version;
+});
+
+// Update package.json
+updateJsonFile("package.json", (pkg) => {
+	pkg.version = version;
+});
+
+// Update versions.json
+updateJsonFile("versions.json", (versions) => {
+	const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+	versions[version] = manifest.minAppVersion;
+});
+
+console.log(`Updated version files to ${version}`);
