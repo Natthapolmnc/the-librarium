@@ -58,19 +58,6 @@ The Librarium doesn't call any model itself — it talks to a local Ollama serve
 
    The **chat** and **summary** models must support `chat`/`generate`. The **embedding** model must be an embeddings-only model (e.g. `nomic-embed-text`) — it cannot be used for chat, and a chat model can't be used for embeddings. Mixing these up is the most common source of 404/500 errors (see [Known limitations](#known-limitations)).
 
-### 3. Install the plugin
-
-```bash
-npm install
-npm run build        # type-checks then bundles src/ -> main.js
-```
-
-Copy `manifest.json`, `main.js`, and `styles.css` into:
-
-```
-<vault>/.obsidian/plugins/the-librarium/
-```
-
 Then enable it from **Settings → Community plugins** in Obsidian, open the plugin's settings tab, point it at your Ollama models, and use the **"Test connection"** button to confirm all three models are reachable and correctly configured.
 
 `npm run dev` runs esbuild in watch mode while you iterate on the source.
