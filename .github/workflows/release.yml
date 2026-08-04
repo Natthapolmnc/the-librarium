@@ -44,6 +44,22 @@ jobs:
       - name: Build plugin
         run: pnpm run build
 
+      - name: Update manifest version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          VERSION="${VERSION#v}"
+
+          node -e "
+            const fs = require('fs');
+            const manifest = require('./manifest.json');
+            manifest.version = '$VERSION';
+            fs.writeFileSync(
+              'manifest.json',
+              JSON.stringify(manifest, null, 2) + '\n'
+            );
+          "
+
+
       - name: Verify manifest version matches tag
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
