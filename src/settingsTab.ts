@@ -1,13 +1,15 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, SettingDefinitionItem } from "obsidian";
 import type OllamaOrchestratorPlugin from "./main";
+import type { OllamaOrchestratorSettings } from "./settings";
+
+type SettingsKey = keyof OllamaOrchestratorSettings;
 
 /**
- * Uses the imperative display() API rather than the declarative
- * getSettingDefinitions() API introduced in Obsidian 1.13 — this plugin's
- * minAppVersion (1.7.2) is below that, and getSettingDefinitions() isn't
- * available to fall back on there. Settings won't show up in Obsidian's
- * settings search on 1.13+ until minAppVersion is raised and this is
- * migrated to the declarative API.
+ * Implements the declarative getSettingDefinitions() API (Obsidian 1.13+) so
+ * these settings are indexed by Obsidian's settings search, while keeping
+ * display() as a fallback for the plugin's minAppVersion (1.7.2) — per the
+ * SettingTab docs, display() is simply skipped whenever getSettingDefinitions()
+ * returns a non-empty array, so both can coexist without raising minAppVersion.
  */
 export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 	plugin: OllamaOrchestratorPlugin;
@@ -15,6 +17,218 @@ export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: OllamaOrchestratorPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+	}
+
+	/** Reads a setting value for a declarative control by its settings key. */
+	getControlValue(key: string): unknown {
+		return this.plugin.settings[key as SettingsKey];
+	}
+
+	/** Persists a setting value from a declarative control by its settings key. */
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		(this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
+		await this.plugin.saveSettings();
+	}
+
+	/** Declarative mirror of display() below, so settings are searchable on Obsidian 1.13+. */
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		const s = this.plugin.settings;
+
+		const note = (text: string) => ({
+			name: "",
+			searchable: false,
+			render: (setting: Setting) => {
+				setting.nameEl.remove();
+				setting.controlEl.remove();
+				setting.descEl.addClass("setting-item-description");
+				setting.descEl.setText(text);
+			},
+		});
+
+		return [
+			{
+				type: "group",
+				heading: "Connection",
+				items: [
+					{ name: "Ollama base URL", control: { type: "text", key: "ollamaBaseUrl" satisfies SettingsKey } },
+					{ name: "Chat model", control: { type: "text", key: "chatModel" satisfies SettingsKey } },
+					{
+						name: "Summary model",
+						desc: "Used for chunk summarization, routing, and update decisions. Can be a smaller/faster model.",
+						control: { type: "text", key: "summaryModel" satisfies SettingsKey },
+					},
+					{
+						name: "Embedding model",
+						desc: "Used when routing method is 'embedding' or 'hybrid'. Must be a different, embeddings-capable model (e.g. nomic-embed-text) — an embeddings-only model can't also be used as the Chat or Summary model, and vice versa; mixing them up is the most common cause of 404/500 errors from Ollama.",
+						control: { type: "text", key: "embeddingModel" satisfies SettingsKey },
+					},
+					{
+						name: "Test connection",
+						desc: "Checks that Ollama is reachable, that all three configured models are actually pulled, and flags the chat/embedding model mix-up that causes 404 or 500 errors.",
+						render: (setting: Setting) => {
+							const resultEl = setting.settingEl.createDiv({ cls: "ooc-settings-test-result" });
+							setting.addButton((btn) => btn.setButtonText("Test connection").onClick(async () => {
+								btn.setDisabled(true);
+								resultEl.setText("Testing...");
+								const lines: string[] = [];
+								let hasWarning = false;
+
+								if (s.embeddingModel === s.chatModel || s.embeddingModel === s.summaryModel) {
+									lines.push("⚠ Embedding model is set to the same model as Chat/Summary — embeddings-only models can't chat/generate and vice versa. This alone is enough to cause 404/500 errors, especially with hybrid routing (which uses both).");
+									hasWarning = true;
+								}
+
+								const pulled = await this.plugin.client.listModels();
+								if (pulled.length === 0) {
+									lines.push(`⚠ Couldn't reach Ollama at "${s.ollamaBaseUrl}", or it reported no models — check the base URL and that "ollama serve" is running.`);
+									hasWarning = true;
+								} else {
+									for (const [label, model] of [["Chat", s.chatModel], ["Summary", s.summaryModel], ["Embedding", s.embeddingModel]] as const) {
+										const found = pulled.some((m) => m === model || m.startsWith(`${model}:`));
+										lines.push(found ? `✓ ${label} model "${model}" is pulled.` : `⚠ ${label} model "${model}" was NOT found — try "ollama pull ${model}".`);
+										if (!found) hasWarning = true;
+									}
+								}
+
+								if (!hasWarning) lines.push("All good.");
+								resultEl.setText(lines.join("\n"));
+								btn.setDisabled(false);
+							}));
+							return () => resultEl.remove();
+						},
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Memory retrieval",
+				items: [
+					{
+						name: "Memories folder",
+						desc: "Vault folder where confirmed, permanent memory-topic notes live. Everything the plugin creates lives under here.",
+						control: { type: "text", key: "memoriesFolder" satisfies SettingsKey },
+					},
+					{
+						name: "Temp-memory folder",
+						desc: "Vault folder for unconfirmed candidate memory notes. These are always transient: deleted the moment they're confirmed or discarded, and wiped whenever their chat session's temp-memory is cleared.",
+						control: { type: "text", key: "tempMemoryFolder" satisfies SettingsKey },
+					},
+					{
+						name: "Note-memory folder",
+						desc: "Vault folder for per-note hierarchical mirrors, used when 'Include current note' pulls in the active note instead of dumping its full text.",
+						control: { type: "text", key: "noteMemoryFolder" satisfies SettingsKey },
+					},
+					{
+						name: "Offer to build note memory",
+						desc: "When a long note referenced with 'Include note' doesn't have a memory mirror yet, ask (in chat) whether to build one before answering. If off, always falls back to a capped raw read instead of asking.",
+						control: { type: "toggle", key: "autoInitNoteMemory" satisfies SettingsKey },
+					},
+					{
+						name: "Max memories per query",
+						desc: "Upper bound on how many memory topics get pulled into context for a single chat query.",
+						control: { type: "slider", key: "maxMemoriesPerQuery" satisfies SettingsKey, min: 1, max: 15, step: 1 },
+					},
+					{
+						name: "Routing method",
+						control: {
+							type: "dropdown",
+							key: "routingMethod" satisfies SettingsKey,
+							options: {
+								llm: "LLM classification",
+								embedding: "Embedding similarity",
+								hybrid: "Hybrid (embedding shortlist + LLM re-rank)",
+							},
+						},
+					},
+					{
+						name: "Similarity threshold",
+						desc: "Minimum cosine similarity for embedding-based routing (0-1).",
+						control: { type: "slider", key: "similarityThreshold" satisfies SettingsKey, min: 0, max: 1, step: 0.05 },
+					},
+					{
+						name: "Suggest memory updates",
+						desc: "After each chat turn, stage any new durable fact as a pending temp-memory entry for you to confirm or discard in the chat panel — nothing is written to permanent memory automatically.",
+						control: { type: "toggle", key: "suggestMemoryUpdates" satisfies SettingsKey },
+					},
+					{
+						name: "Ask for clarification",
+						desc: "If a question depends on personal context that memory and temp-memory don't sufficiently cover, ask you for more detail instead of guessing.",
+						control: { type: "toggle", key: "enableClarification" satisfies SettingsKey },
+					},
+					{
+						name: "Extract query intent",
+						desc: "Before routing/searching and answering, distill exactly what you're asking for (resolving 'this'/'that' from recent conversation). Sharpens both retrieval and the final answer; costs one extra small-model call per query.",
+						control: { type: "toggle", key: "enableIntentExtraction" satisfies SettingsKey },
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Chat history digest",
+				items: [
+					note(
+						"Instead of re-sending the entire growing transcript on every turn, the plugin keeps a compact rolling summary of the conversation and the user's overall intent, updated one turn at a time. Older turns are represented by that summary; only the most recent turns are still sent verbatim."
+					),
+					{
+						name: "Track chat summary",
+						desc: "Maintain a rolling summary + inferred user intent per chat session, and use it (alongside the capped recent messages below) so the model stays aware of earlier turns without needing the full transcript. Costs one extra small-model call per turn.",
+						control: { type: "toggle", key: "trackChatSummary" satisfies SettingsKey },
+					},
+					{
+						name: "Recent raw turns to include verbatim",
+						desc: "How many of the most recent messages (not turn-pairs) are sent to the model word-for-word. Older messages beyond this are dropped from the raw transcript and relied on only via the rolling summary above. Ignored (full history sent) if 'Track chat summary' is off.",
+						control: { type: "slider", key: "recentRawTurns" satisfies SettingsKey, min: 2, max: 40, step: 2 },
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Memory layers (progressive abstraction)",
+				items: [
+					note(
+						"Every memory is stored as a fixed stack of named layers instead of a variable-depth tree: Overview (top, least detail) down through as many compression passes as configured below, ending at the Comprehensive Summary (most detail, built from the source) — with the raw Original always available as a last resort. Search always starts at the Overview and only loads a deeper layer when the one above wasn't enough."
+					),
+					{
+						name: "Abstraction layers",
+						desc: "How many compression passes sit above the Comprehensive Summary. 3 (default) gives Overview → High-Level Concepts → Detailed Concepts → Comprehensive Summary. Lower is cheaper to build and search; higher gives finer-grained detail control for long documents.",
+						control: { type: "slider", key: "numAbstractionLayers" satisfies SettingsKey, min: 1, max: 6, step: 1 },
+					},
+				],
+			},
+			{
+				type: "group",
+				heading: "Merge passes (used to build the Comprehensive Summary)",
+				items: [
+					note(
+						"Splitting raw source text into chunks is now handled entirely by the LLM itself and has no size/overlap settings here. The settings below only govern the separate step of regrouping and merging the already-summarized chunks back together into one Comprehensive Summary."
+					),
+					{
+						name: "Max chunk-merge passes",
+						desc: "Safety cap on how many regroup-and-merge passes are allowed while collapsing many chunks down into one Comprehensive Summary. Only matters for documents needing more chunks than fit in one merge round.",
+						control: { type: "number", key: "maxChunkMergePasses" satisfies SettingsKey },
+					},
+					{
+						name: "Merge group max characters",
+						desc: "Char budget for grouping already-summarized chunks together during a merge pass. Should generally be large enough that several summarized chunks can combine into one group at a time — too small and merge passes barely shrink the part count.",
+						control: { type: "number", key: "mergeGroupMaxChars" satisfies SettingsKey },
+					},
+					{
+						name: "Merge overlap units",
+						desc: "How many prior-level units are repeated across merge-group boundaries for continuity. Keep this small relative to the group size above — too large an overlap stalls merge progress to roughly one unit advanced per pass.",
+						control: { type: "number", key: "mergeOverlapUnits" satisfies SettingsKey, min: 0 },
+					},
+					{
+						name: "Concurrent summaries",
+						desc: "How many chunk/group summaries to run at once per level instead of one at a time. Higher is faster but sends more simultaneous requests to Ollama.",
+						control: { type: "slider", key: "maxConcurrentSummaries" satisfies SettingsKey, min: 1, max: 8, step: 1 },
+					},
+				],
+			},
+			{
+				name: "Debug logging",
+				control: { type: "toggle", key: "debugLogging" satisfies SettingsKey },
+			},
+		];
 	}
 
 	display(): void {

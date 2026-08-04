@@ -107,7 +107,7 @@ export default class OllamaOrchestratorPlugin extends Plugin {
 				const file = this.activeFileTracker.getFile();
 				if (!file || file.extension !== "md") return false;
 				if (checking) return true;
-				this.ingestFile(file);
+				void this.ingestFile(file);
 				return true;
 			},
 		});
@@ -119,7 +119,7 @@ export default class OllamaOrchestratorPlugin extends Plugin {
 				const file = this.activeFileTracker.getFile();
 				if (!file || file.extension !== "md") return false;
 				if (checking) return true;
-				this.refreshNoteMemory(file, "full");
+				void this.refreshNoteMemory(file, "full");
 				return true;
 			},
 		});
@@ -131,7 +131,7 @@ export default class OllamaOrchestratorPlugin extends Plugin {
 				const file = this.activeFileTracker.getFile();
 				if (!file || file.extension !== "md") return false;
 				if (checking) return true;
-				this.refreshNoteMemory(file, "incremental");
+				void this.refreshNoteMemory(file, "incremental");
 				return true;
 			},
 		});
@@ -177,7 +177,7 @@ export default class OllamaOrchestratorPlugin extends Plugin {
 			leaf = workspace.getRightLeaf(false)!;
 			await leaf.setViewState({ type: CHAT_VIEW_TYPE, active: true });
 		}
-		workspace.revealLeaf(leaf);
+		await workspace.revealLeaf(leaf);
 	}
 
 	private rebuildStores(): void {
@@ -186,8 +186,8 @@ export default class OllamaOrchestratorPlugin extends Plugin {
 		this.noteMemoryStore = new NoteMemoryStore(this.app, this.noteMemoryData, this.settings.noteMemoryFolder, () => this.savePluginData());
 		this.chatHistoryStore = new ChatHistoryStore(this.chatHistoryData, () => this.savePluginData());
 		this.chatSessionStore = new ChatSessionStore(this.chatSessionData, () => this.savePluginData(), (sessionId) => {
-			this.tempMemoryStore.clearSession(sessionId);
-			this.chatHistoryStore.clearSession(sessionId);
+			void this.tempMemoryStore.clearSession(sessionId);
+			void this.chatHistoryStore.clearSession(sessionId);
 		});
 
 		if (this.orchestrator) {

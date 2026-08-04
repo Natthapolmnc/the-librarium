@@ -80,13 +80,13 @@ export class ChatView extends ItemView {
 			if (this.busy) {
 				this.requestCancel();
 			} else {
-				this.send();
+				void this.send();
 			}
 		});
 		this.inputEl.addEventListener("keydown", (e) => {
 			if (e.key === "Enter" && !e.shiftKey) {
 				e.preventDefault();
-				this.send();
+				void this.send();
 			}
 		});
 		this.inputEl.addEventListener("input", () => this.autoResizeInput());
@@ -143,7 +143,7 @@ export class ChatView extends ItemView {
 		btn.addEventListener("click", () => {
 			const file = this.plugin.activeFileTracker.getFile();
 			if (!file) { new Notice("No note is currently open."); return; }
-			this.runNoteMemorySync(file, "full");
+			void this.runNoteMemorySync(file, "full");
 		});
 		return btn;
 	}
@@ -310,7 +310,7 @@ export class ChatView extends ItemView {
 		});
 		this.historyPanel.toggleClass("ooc-history-busy", busy);
 		this.historyPanel.querySelectorAll("button").forEach((el) => {
-			(el as HTMLButtonElement).disabled = busy;
+			el.disabled = busy;
 		});
 	}
 
@@ -366,7 +366,9 @@ export class ChatView extends ItemView {
 			// bold/italic) instead of dumping raw text — re-checks scroll
 			// position once rendering finishes, since content height can grow
 			// (e.g. a code block) after the initial synchronous scroll below.
-			MarkdownRenderer.render(this.app, text, textEl, "", this).then(() => this.scrollToBottom());
+			MarkdownRenderer.render(this.app, text, textEl, "", this)
+				.then(() => this.scrollToBottom())
+				.catch((err) => console.error("The Librarium: failed to render markdown message", err));
 
 			const copyBtn = row.createEl("button", { cls: "ooc-copy-btn" });
 			setIcon(copyBtn, "copy");
@@ -376,7 +378,7 @@ export class ChatView extends ItemView {
 				try {
 					await navigator.clipboard.writeText(text);
 					setIcon(copyBtn, "check");
-					setTimeout(() => setIcon(copyBtn, "copy"), 1200);
+					window.setTimeout(() => setIcon(copyBtn, "copy"), 1200);
 				} catch {
 					new Notice("Couldn't copy to clipboard.");
 				}
@@ -422,7 +424,7 @@ export class ChatView extends ItemView {
 				const line = linesEl.createDiv({ cls: "ooc-progress-line ooc-progress-active", text: `${p.phase}…` });
 				line.dataset.layer = String(p.layerIndex);
 			} else {
-				const active = linesEl.querySelector(`.ooc-progress-active[data-layer="${p.layerIndex}"]`) as HTMLElement | null;
+				const active = linesEl.querySelector<HTMLElement>(`.ooc-progress-active[data-layer="${p.layerIndex}"]`);
 				if (active) {
 					active.removeClass("ooc-progress-active");
 					active.setText(`${p.phase} ✓`);
@@ -600,7 +602,7 @@ export class ChatView extends ItemView {
 			if (wasClarificationReply) this.awaitingClarificationFor = originalQueryForClarification;
 			this.inputEl.value = text;
 			this.autoResizeInput();
-			this.send();
+			void this.send();
 		});
 		this.scrollToBottom(true);
 	}
