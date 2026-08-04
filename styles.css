@@ -60,6 +60,7 @@
 /* ---- History panel ---- */
 
 .ooc-history-panel {
+	display: none;
 	flex-direction: column;
 	gap: 2px;
 	max-height: 240px;
@@ -69,6 +70,10 @@
 	padding: 6px;
 	margin-bottom: 6px;
 	background: var(--background-secondary);
+}
+
+.ooc-history-panel-visible {
+	display: flex;
 }
 
 .ooc-toolbar-busy,
@@ -185,6 +190,10 @@
 	box-shadow: var(--shadow-s);
 	cursor: pointer;
 	z-index: 5;
+}
+
+.ooc-scroll-btn-visible {
+	display: flex;
 }
 
 .ooc-scroll-btn svg {
@@ -329,8 +338,8 @@
 	opacity: 0.7;
 }
 
-.ooc-copy-btn:hover {
-	opacity: 1 !important;
+.ooc-msg.ooc-assistant:hover .ooc-copy-btn:hover {
+	opacity: 1;
 	color: var(--text-normal);
 }
 

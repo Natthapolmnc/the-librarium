@@ -108,7 +108,7 @@ async function mapWithConcurrency<T, R>(
 	fn: (item: T, index: number) => Promise<R>,
 	token?: CancellationToken
 ): Promise<R[]> {
-	const results: R[] = new Array(items.length);
+	const results: R[] = new Array<R>(items.length);
 	let next = 0;
 	const effectiveLimit = Math.max(1, Math.min(limit, items.length || 1));
 

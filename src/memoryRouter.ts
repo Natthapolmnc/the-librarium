@@ -12,8 +12,8 @@ function extractJsonArray(raw: string): string[] | null {
 	const match = raw.match(/\[[\s\S]*\]/);
 	if (!match) return null;
 	try {
-		const arr = JSON.parse(match[0]);
-		return Array.isArray(arr) ? arr.map(String) : null;
+		const parsed: unknown = JSON.parse(match[0]);
+		return Array.isArray(parsed) ? (parsed as unknown[]).map((item) => String(item)) : null;
 	} catch {
 		return null;
 	}

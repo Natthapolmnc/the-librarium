@@ -35,7 +35,7 @@ export class OllamaClient {
 	 * call at all — e.g. an embeddings-only model like nomic-embed-text can't
 	 * be used for /api/generate or /api/chat, and vice versa (500).
 	 */
-	private async post(path: string, body: Record<string, unknown>, opDescription: string, model: string): Promise<any> {
+	private async post(path: string, body: Record<string, unknown>, opDescription: string, model: string): Promise<unknown> {
 		let res;
 		try {
 			res = await requestUrl({

@@ -104,7 +104,7 @@ export class TempMemoryStore {
 		const entry = this.data[id];
 		if (!entry) return;
 		const file = this.app.vault.getAbstractFileByPath(entry.notePath);
-		if (file instanceof TFile) await this.app.vault.delete(file);
+		if (file instanceof TFile) await this.app.fileManager.trashFile(file);
 		delete this.data[id];
 		await this.persist();
 	}

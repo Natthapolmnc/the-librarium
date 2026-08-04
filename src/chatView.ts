@@ -53,7 +53,6 @@ export class ChatView extends ItemView {
 
 		this.toolbar = container.createDiv({ cls: "ooc-toolbar" });
 		this.historyPanel = container.createDiv({ cls: "ooc-history-panel" });
-		this.historyPanel.style.display = "none";
 		this.buildToolbar();
 
 		const messagesWrapper = container.createDiv({ cls: "ooc-messages-wrapper" });
@@ -96,6 +95,13 @@ export class ChatView extends ItemView {
 		this.session = existing ?? this.plugin.chatSessionStore.create();
 		this.loadSessionIntoView();
 		this.inputEl.focus();
+	}
+
+	/** Wraps an async handler so it can be passed anywhere a void-returning callback is expected (event listeners, onClick props) without leaving its promise dangling for the caller. */
+	private toVoidHandler<Args extends unknown[]>(handler: (...args: Args) => Promise<void>): (...args: Args) => void {
+		return (...args: Args) => {
+			void handler(...args);
+		};
 	}
 
 	private iconButton(container: HTMLElement, icon: string, label: string, onClick: () => void): HTMLButtonElement {
@@ -147,7 +153,7 @@ export class ChatView extends ItemView {
 
 		this.iconButton(this.toolbar, "plus", "New chat", () => this.startNewChat());
 		this.iconButton(this.toolbar, "history", "Chat history", () => this.toggleHistoryPanel());
-		this.iconButton(this.toolbar, "trash-2", "Clear this chat's temp-memory (keeps the conversation)", () => this.clearTempMemory());
+		this.iconButton(this.toolbar, "trash-2", "Clear this chat's temp-memory (keeps the conversation)", this.toVoidHandler(() => this.clearTempMemory()));
 		this.buildNoteMemoryButton(this.toolbar);
 
 		const modeLabel = this.toolbar.createEl("label", { cls: "ooc-mode-toggle" });
@@ -162,7 +168,7 @@ export class ChatView extends ItemView {
 
 	private toggleHistoryPanel(): void {
 		this.historyVisible = !this.historyVisible;
-		this.historyPanel.style.display = this.historyVisible ? "flex" : "none";
+		this.historyPanel.toggleClass("ooc-history-panel-visible", this.historyVisible);
 		if (this.historyVisible) this.renderHistoryPanel();
 	}
 
@@ -190,10 +196,10 @@ export class ChatView extends ItemView {
 			const delBtn = row.createEl("button", { cls: "ooc-history-delete" });
 			setIcon(delBtn, "x");
 			delBtn.setAttr("title", "Delete this chat");
-			delBtn.addEventListener("click", async (e) => {
+			delBtn.addEventListener("click", this.toVoidHandler(async (e: MouseEvent) => {
 				e.stopPropagation();
 				await this.deleteSession(s.id);
-			});
+			}));
 		}
 	}
 
@@ -323,7 +329,7 @@ export class ChatView extends ItemView {
 	}
 
 	private updateScrollButtonVisibility(): void {
-		this.scrollBtn.style.display = this.isNearBottom() ? "none" : "flex";
+		this.scrollBtn.toggleClass("ooc-scroll-btn-visible", !this.isNearBottom());
 	}
 
 	/** Scrolls to the newest message — but only if the user hasn't scrolled up to reread something, unless `force` (e.g. they just sent a message, or switched chats). */
@@ -337,8 +343,8 @@ export class ChatView extends ItemView {
 	// ---- Input ----
 
 	private autoResizeInput(): void {
-		this.inputEl.style.height = "auto";
-		this.inputEl.style.height = `${Math.min(this.inputEl.scrollHeight, INPUT_MAX_HEIGHT_PX)}px`;
+		this.inputEl.setCssStyles({ height: "auto" });
+		this.inputEl.setCssStyles({ height: `${Math.min(this.inputEl.scrollHeight, INPUT_MAX_HEIGHT_PX)}px` });
 	}
 
 	private formatTime(ts: number): string {
@@ -366,7 +372,7 @@ export class ChatView extends ItemView {
 			setIcon(copyBtn, "copy");
 			copyBtn.setAttr("title", "Copy response");
 			copyBtn.setAttr("aria-label", "Copy response");
-			copyBtn.addEventListener("click", async () => {
+			copyBtn.addEventListener("click", this.toVoidHandler(async () => {
 				try {
 					await navigator.clipboard.writeText(text);
 					setIcon(copyBtn, "check");
@@ -374,7 +380,7 @@ export class ChatView extends ItemView {
 				} catch {
 					new Notice("Couldn't copy to clipboard.");
 				}
-			});
+			}));
 		} else {
 			textEl.setText(text);
 		}
@@ -480,18 +486,18 @@ export class ChatView extends ItemView {
 		const file = this.app.vault.getAbstractFileByPath(filePath);
 		const asFile = file instanceof TFile ? file : null;
 
-		refreshBtn.addEventListener("click", async () => {
+		refreshBtn.addEventListener("click", this.toVoidHandler(async () => {
 			if (this.busy) { new Notice("Something else is already running — wait for it to finish or cancel it first."); return; }
 			refreshBtn.disabled = true;
 			incrementalBtn.disabled = true;
 			if (asFile) await this.runNoteMemorySync(asFile, "full");
-		});
-		incrementalBtn.addEventListener("click", async () => {
+		}));
+		incrementalBtn.addEventListener("click", this.toVoidHandler(async () => {
 			if (this.busy) { new Notice("Something else is already running — wait for it to finish or cancel it first."); return; }
 			refreshBtn.disabled = true;
 			incrementalBtn.disabled = true;
 			if (asFile) await this.runNoteMemorySync(asFile, "incremental");
-		});
+		}));
 	}
 
 	// ---- Pending memory confirm/discard cards ----
@@ -510,7 +516,7 @@ export class ChatView extends ItemView {
 
 		const disableBoth = () => { confirmBtn.disabled = true; discardBtn.disabled = true; };
 
-		confirmBtn.addEventListener("click", async () => {
+		confirmBtn.addEventListener("click", this.toVoidHandler(async () => {
 			if (this.busy) return;
 			disableBoth();
 			this.currentCancellation = new CancellationSource();
@@ -532,9 +538,9 @@ export class ChatView extends ItemView {
 				this.currentCancellation = null;
 				this.setBusy(false);
 			}
-		});
+		}));
 
-		discardBtn.addEventListener("click", async () => {
+		discardBtn.addEventListener("click", this.toVoidHandler(async () => {
 			if (this.busy) return;
 			disableBoth();
 			this.setBusy(true);
@@ -545,7 +551,7 @@ export class ChatView extends ItemView {
 			} finally {
 				this.setBusy(false);
 			}
-		});
+		}));
 
 		this.scrollToBottom();
 	}
@@ -663,7 +669,7 @@ export class ChatView extends ItemView {
 		const skipBtn = actions.createEl("button", { text: "Skip, just answer" });
 		const disableBoth = () => { buildBtn.disabled = true; skipBtn.disabled = true; };
 
-		buildBtn.addEventListener("click", async () => {
+		buildBtn.addEventListener("click", this.toVoidHandler(async () => {
 			if (this.busy) return;
 			disableBoth();
 			card.createDiv({ cls: "ooc-pending-resolved", text: "Building note memory…" });
@@ -683,14 +689,14 @@ export class ChatView extends ItemView {
 			}
 
 			await this.runQuery(query, false, null);
-		});
+		}));
 
-		skipBtn.addEventListener("click", async () => {
+		skipBtn.addEventListener("click", this.toVoidHandler(async () => {
 			if (this.busy) return;
 			disableBoth();
 			card.createDiv({ cls: "ooc-pending-resolved", text: "Skipped — answering without it." });
 			await this.runQuery(query, false, null);
-		});
+		}));
 
 		this.scrollToBottom();
 	}

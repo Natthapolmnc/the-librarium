@@ -1,6 +1,14 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type OllamaOrchestratorPlugin from "./main";
 
+/**
+ * Uses the imperative display() API rather than the declarative
+ * getSettingDefinitions() API introduced in Obsidian 1.13 — this plugin's
+ * minAppVersion (1.7.2) is below that, and getSettingDefinitions() isn't
+ * available to fall back on there. Settings won't show up in Obsidian's
+ * settings search on 1.13+ until minAppVersion is raised and this is
+ * migrated to the declarative API.
+ */
 export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 	plugin: OllamaOrchestratorPlugin;
 
@@ -14,7 +22,7 @@ export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 		containerEl.empty();
 		const s = this.plugin.settings;
 
-		containerEl.createEl("h2", { text: "Connection" });
+		new Setting(containerEl).setName("Connection").setHeading();
 
 		new Setting(containerEl)
 			.setName("Ollama base URL")
@@ -66,7 +74,7 @@ export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 			btn.setDisabled(false);
 		}));
 
-		containerEl.createEl("h2", { text: "Memory retrieval" });
+		new Setting(containerEl).setName("Memory retrieval").setHeading();
 
 		new Setting(containerEl)
 			.setName("Memories folder")
@@ -124,7 +132,7 @@ export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 			.setDesc("Before routing/searching and answering, distill exactly what you're asking for (resolving 'this'/'that' from recent conversation). Sharpens both retrieval and the final answer; costs one extra small-model call per query.")
 			.addToggle((tg) => tg.setValue(s.enableIntentExtraction).onChange(async (v) => { s.enableIntentExtraction = v; await this.plugin.saveSettings(); }));
 
-		containerEl.createEl("h2", { text: "Chat history digest" });
+		new Setting(containerEl).setName("Chat history digest").setHeading();
 		containerEl.createEl("p", {
 			cls: "setting-item-description",
 			text: "Instead of re-sending the entire growing transcript on every turn, the plugin keeps a compact rolling summary of the conversation and the user's overall intent, updated one turn at a time. Older turns are represented by that summary; only the most recent turns are still sent verbatim.",
@@ -141,7 +149,7 @@ export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 			.addSlider((sl) => sl.setLimits(2, 40, 2).setValue(s.recentRawTurns).setDynamicTooltip()
 				.onChange(async (v) => { s.recentRawTurns = v; await this.plugin.saveSettings(); }));
 
-		containerEl.createEl("h2", { text: "Memory layers (progressive abstraction)" });
+		new Setting(containerEl).setName("Memory layers (progressive abstraction)").setHeading();
 		containerEl.createEl("p", {
 			cls: "setting-item-description",
 			text: "Every memory is stored as a fixed stack of named layers instead of a variable-depth tree: Overview (top, least detail) down through as many compression passes as configured below, ending at the Comprehensive Summary (most detail, built from the source) — with the raw Original always available as a last resort. Search always starts at the Overview and only loads a deeper layer when the one above wasn't enough.",
@@ -153,7 +161,7 @@ export class OllamaOrchestratorSettingTab extends PluginSettingTab {
 			.addSlider((sl) => sl.setLimits(1, 6, 1).setValue(s.numAbstractionLayers).setDynamicTooltip()
 				.onChange(async (v) => { s.numAbstractionLayers = v; await this.plugin.saveSettings(); }));
 
-		containerEl.createEl("h2", { text: "Merge passes (used to build the Comprehensive Summary)" });
+		new Setting(containerEl).setName("Merge passes (used to build the Comprehensive Summary)").setHeading();
 		containerEl.createEl("p", {
 			cls: "setting-item-description",
 			text: "Splitting raw source text into chunks is now handled entirely by the LLM itself and has no size/overlap settings here. The settings below only govern the separate step of regrouping and merging the already-summarized chunks back together into one Comprehensive Summary.",

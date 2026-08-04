@@ -2,7 +2,7 @@
   "id": "the-librarium",
   "name": "The Librarium",
   "version": "1.0.0",
-  "minAppVersion": "1.4.0",
+  "minAppVersion": "1.7.2",
   "description": "Local-LLM (Ollama) chat orchestrator with topic-based memory, adjustable retrieval, and hierarchical document summarization.",
   "author": "natthapolmnc",
   "authorUrl": "",
