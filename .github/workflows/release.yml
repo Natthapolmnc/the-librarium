@@ -61,7 +61,7 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/}"
           VERSION="${VERSION#v}"
 
-          node scripts/update-version.mjs "$VERSION"
+          node scripts/version-update.mjs "$VERSION"
 
       - name: Build plugin
         run: pnpm run build
