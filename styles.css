@@ -1,0 +1,551 @@
+.ollama-orchestrator-chat {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 8px;
+}
+
+.ollama-orchestrator-chat button:disabled,
+.ollama-orchestrator-chat input:disabled,
+.ollama-orchestrator-chat textarea:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+/* ---- Toolbar ---- */
+
+.ooc-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 6px;
+}
+
+.ooc-icon-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	background: transparent;
+	box-shadow: none;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	color: var(--text-muted);
+}
+
+.ooc-icon-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.ooc-icon-btn svg {
+	width: 15px;
+	height: 15px;
+}
+
+.ooc-mode-toggle {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: var(--font-ui-smaller);
+	opacity: 0.85;
+	cursor: pointer;
+	margin-left: auto;
+	white-space: nowrap;
+}
+
+/* ---- History panel ---- */
+
+.ooc-history-panel {
+	flex-direction: column;
+	gap: 2px;
+	max-height: 240px;
+	overflow-y: auto;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 6px;
+	margin-bottom: 6px;
+	background: var(--background-secondary);
+}
+
+.ooc-toolbar-busy,
+.ooc-history-busy {
+	opacity: 0.6;
+}
+
+.ooc-history-empty {
+	font-size: var(--font-ui-smaller);
+	opacity: 0.6;
+	padding: 4px;
+}
+
+.ooc-history-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 6px;
+	border-radius: 4px;
+	cursor: default;
+}
+
+.ooc-history-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.ooc-history-active {
+	background: var(--background-modifier-active-hover);
+}
+
+.ooc-history-title {
+	flex: 1;
+	min-width: 0;
+	cursor: pointer;
+}
+
+.ooc-history-title-text {
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ooc-history-preview {
+	font-size: var(--font-ui-smaller);
+	opacity: 0.55;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ooc-history-time {
+	font-size: var(--font-ui-smaller);
+	opacity: 0.55;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.ooc-history-delete {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	background: transparent;
+	box-shadow: none;
+	border: none;
+	opacity: 0.5;
+	flex-shrink: 0;
+}
+
+.ooc-history-delete svg {
+	width: 12px;
+	height: 12px;
+}
+
+.ooc-history-delete:hover {
+	opacity: 1;
+	color: var(--text-error);
+}
+
+/* ---- Messages ---- */
+
+.ooc-messages-wrapper {
+	position: relative;
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	margin-bottom: 8px;
+}
+
+.ooc-messages {
+	flex: 1;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding-right: 2px;
+}
+
+.ooc-scroll-btn {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	position: absolute;
+	bottom: 10px;
+	right: 14px;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	box-shadow: var(--shadow-s);
+	cursor: pointer;
+	z-index: 5;
+}
+
+.ooc-scroll-btn svg {
+	width: 14px;
+	height: 14px;
+}
+
+.ooc-empty-state {
+	margin: auto;
+	text-align: center;
+	max-width: 220px;
+	opacity: 0.7;
+}
+
+.ooc-empty-state-title {
+	font-weight: 600;
+	font-size: var(--font-ui-medium);
+	margin-bottom: 6px;
+}
+
+.ooc-empty-state-sub {
+	font-size: var(--font-ui-small);
+	line-height: 1.4;
+}
+
+.ooc-msg {
+	position: relative;
+	border-radius: 8px;
+	padding: 7px 10px;
+	font-size: var(--font-ui-small);
+	max-width: 92%;
+}
+
+.ooc-user {
+	background: var(--background-secondary);
+	align-self: flex-end;
+}
+
+.ooc-assistant {
+	background: var(--background-secondary-alt);
+	align-self: flex-start;
+}
+
+.ooc-msg-header {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	margin-bottom: 3px;
+}
+
+.ooc-role {
+	font-weight: 600;
+	opacity: 0.6;
+	font-size: var(--font-ui-smaller);
+}
+
+.ooc-timestamp {
+	opacity: 0.4;
+	font-size: var(--font-ui-smaller);
+}
+
+.ooc-text {
+	white-space: pre-wrap;
+	line-height: 1.45;
+}
+
+/* Markdown content rendered inside assistant bubbles */
+.ooc-text p {
+	margin: 0 0 0.5em 0;
+	white-space: normal;
+}
+
+.ooc-text p:last-child {
+	margin-bottom: 0;
+}
+
+.ooc-text ul,
+.ooc-text ol {
+	margin: 0.25em 0 0.5em 1.2em;
+	padding: 0;
+}
+
+.ooc-text li {
+	margin-bottom: 0.15em;
+}
+
+.ooc-text code {
+	font-size: 0.9em;
+	background: var(--code-background);
+	border-radius: 3px;
+	padding: 0.1em 0.35em;
+}
+
+.ooc-text pre {
+	background: var(--code-background);
+	border-radius: 6px;
+	padding: 8px 10px;
+	overflow-x: auto;
+	margin: 0.4em 0;
+}
+
+.ooc-text pre code {
+	background: none;
+	padding: 0;
+}
+
+.ooc-text blockquote {
+	border-left: 3px solid var(--text-faint);
+	margin: 0.4em 0;
+	padding-left: 0.8em;
+	opacity: 0.85;
+}
+
+.ooc-text h1, .ooc-text h2, .ooc-text h3, .ooc-text h4 {
+	font-size: 1.05em;
+	margin: 0.5em 0 0.25em 0;
+}
+
+.ooc-text a {
+	word-break: break-word;
+}
+
+.ooc-copy-btn {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	background: transparent;
+	box-shadow: none;
+	border: none;
+	opacity: 0;
+	color: var(--text-muted);
+	transition: opacity 0.1s ease;
+}
+
+.ooc-msg.ooc-assistant:hover .ooc-copy-btn {
+	opacity: 0.7;
+}
+
+.ooc-copy-btn:hover {
+	opacity: 1 !important;
+	color: var(--text-normal);
+}
+
+.ooc-copy-btn svg {
+	width: 12px;
+	height: 12px;
+}
+
+.ooc-system-note {
+	align-self: center;
+	font-size: var(--font-ui-smaller);
+	opacity: 0.7;
+	font-style: italic;
+}
+
+.ooc-loading-dots {
+	display: flex;
+	gap: 4px;
+}
+
+.ooc-loading-dots span {
+	opacity: 0.3;
+	animation: ooc-pulse 1.1s infinite ease-in-out;
+}
+
+.ooc-loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+.ooc-loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes ooc-pulse {
+	0%, 80%, 100% { opacity: 0.2; }
+	40% { opacity: 1; }
+}
+
+/* ---- Note-memory progress trace ---- */
+
+.ooc-progress-log {
+	align-self: stretch;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 10px;
+	background: var(--background-secondary);
+	font-size: var(--font-ui-smaller);
+}
+
+.ooc-progress-title-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+.ooc-progress-title {
+	font-weight: 600;
+}
+
+.ooc-progress-cancel {
+	font-size: var(--font-ui-smaller);
+	padding: 1px 8px;
+	opacity: 0.75;
+	flex-shrink: 0;
+}
+
+.ooc-progress-cancel:hover {
+	opacity: 1;
+}
+
+.ooc-progress-lines {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	opacity: 0.85;
+}
+
+.ooc-progress-active {
+	opacity: 1;
+}
+
+.ooc-progress-active::before {
+	content: "→ ";
+}
+
+.ooc-progress-done {
+	margin-top: 4px;
+	font-style: italic;
+	opacity: 0.8;
+}
+
+/* ---- Note-memory hint bar ---- */
+
+.ooc-notemem-hint {
+	align-self: stretch;
+	font-size: var(--font-ui-smaller);
+	opacity: 0.75;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.ooc-notemem-hint button {
+	font-size: var(--font-ui-smaller);
+	padding: 2px 6px;
+}
+
+/* ---- Retry ---- */
+
+.ooc-retry-row {
+	align-self: center;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: var(--font-ui-smaller);
+	opacity: 0.85;
+}
+
+.ooc-retry-row button {
+	font-size: var(--font-ui-smaller);
+	padding: 2px 8px;
+}
+
+/* ---- Pending memory cards ---- */
+
+.ooc-pending-card {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 10px;
+	background: var(--background-primary-alt);
+	align-self: stretch;
+}
+
+.ooc-pending-label {
+	font-weight: 600;
+	font-size: var(--font-ui-small);
+	margin-bottom: 4px;
+}
+
+.ooc-pending-fact {
+	font-size: var(--font-ui-small);
+	opacity: 0.85;
+	white-space: pre-wrap;
+	margin-bottom: 6px;
+}
+
+.ooc-pending-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.ooc-pending-resolved {
+	font-size: var(--font-ui-smaller);
+	opacity: 0.7;
+	font-style: italic;
+}
+
+/* ---- Status + input ---- */
+
+.ooc-status {
+	font-size: var(--font-ui-smaller);
+	opacity: 0.6;
+	margin-bottom: 6px;
+	min-height: 1em;
+}
+
+.ooc-input-row {
+	display: flex;
+	gap: 6px;
+	align-items: flex-end;
+}
+
+.ooc-input-row textarea {
+	flex: 1;
+	resize: none;
+	min-height: 1.6em;
+	max-height: 160px;
+	overflow-y: auto;
+	line-height: 1.4;
+}
+
+.ooc-send-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	flex-shrink: 0;
+}
+
+.ooc-send-btn svg {
+	width: 15px;
+	height: 15px;
+}
+
+.ooc-send-btn-busy {
+	animation: ooc-send-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ooc-send-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.6; }
+}
+
+.ooc-input-hint {
+	font-size: var(--font-ui-smaller);
+	opacity: 0.4;
+	margin-top: 3px;
+	text-align: right;
+}
+
+/* ---- Settings tab ---- */
+
+.ooc-settings-test-result {
+	white-space: pre-wrap;
+	font-size: var(--font-ui-smaller);
+	opacity: 0.85;
+	padding: 4px 0 12px 0;
+}
