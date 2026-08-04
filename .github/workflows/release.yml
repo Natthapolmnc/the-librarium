@@ -28,7 +28,7 @@ jobs:
       - name: Get version
         id: version
         run: |
-          VERSION="${GITHUB_REF#refs/tags/pre:}"
+          VERSION="${GITHUB_REF#refs/tags/pre-}"
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
