@@ -7,7 +7,7 @@ name: Release Obsidian plugin
 on:
   push:
     tags:
-      - "pre:*"
+      - "pre-*"
 
 permissions:
   contents: write
