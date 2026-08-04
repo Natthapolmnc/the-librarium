@@ -20,6 +20,7 @@ Everything runs locally against your own Ollama models: no cloud API, no data le
 
 ## Contents
 
+- [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Tested Configuration](#tested-configuration)
 - [Recommended Configuration](#recommended-configuration)
@@ -33,6 +34,17 @@ Everything runs locally against your own Ollama models: no cloud API, no data le
 - [Known limitations](#known-limitations)
 - [Support The Librarium](#️-support-the-librarium)
 - [License](#license)
+
+
+## Screenshots
+
+### Chat Interface
+
+![The Librarium Chat Interface](assets/screenshots/chat-interface.png)
+
+### Memory Management
+
+![Memory Layers](assets/screenshots/memory-layer.png)
 
 ## Installation
 
