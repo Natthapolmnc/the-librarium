@@ -1,4 +1,4 @@
-# ![The Librarium](docs/images/icon.png) The Librarium
+# ![The Librarium](icon.png)
 
 # The Librarium
 
