@@ -41,24 +41,39 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build plugin
-        run: pnpm run build
-
       - name: Update manifest version
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          VERSION="${VERSION#v}"
+            run: |
+              VERSION="${GITHUB_REF#refs/tags/}"
+              VERSION="${VERSION#v}"
 
+              node -e "
+                const fs = require('fs');
+                const manifest = require('./manifest.json');
+                manifest.version = '$VERSION';
+                fs.writeFileSync(
+                  'manifest.json',
+                  JSON.stringify(manifest, null, 2) + '\n'
+                );
+            "
+
+      - name: Update versions.json
+        run: |
           node -e "
             const fs = require('fs');
+
             const manifest = require('./manifest.json');
-            manifest.version = '$VERSION';
+            const versions = require('./versions.json');
+
+            versions[manifest.version] = manifest.minAppVersion;
+
             fs.writeFileSync(
-              'manifest.json',
-              JSON.stringify(manifest, null, 2) + '\n'
+              'versions.json',
+              JSON.stringify(versions, null, 2) + '\n'
             );
           "
 
+      - name: Build plugin
+        run: pnpm run build
 
       - name: Verify manifest version matches tag
         run: |
