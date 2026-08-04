@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: OllamaOrchestratorSettings = {
 	enableClarification: true,
 	similarityThreshold: 0.55,
 
-	maxChunkMergePasses: 4,
+	maxChunkMergePasses: 2,
 	maxConcurrentSummaries: 4,
 	mergeGroupMaxChars: 20000,
 	mergeOverlapUnits: 1,
