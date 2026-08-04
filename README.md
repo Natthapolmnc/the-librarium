@@ -1,6 +1,12 @@
-# ![The Librarium](icon.png)
+<div align="center">
+
+<img src="assets/librarium-logo.png" width="200">
 
 # The Librarium
+
+A local LLM chat orchestrator for Obsidian powered by Ollama.
+
+</div>
 
 **The Librarium** is a local-LLM chat orchestrator for [Obsidian](https://obsidian.md), backed by [Ollama](https://ollama.com). It keeps topic-separated memory as a fixed stack of progressively more detailed layers — from a quick Overview down to a Comprehensive Summary, plus the raw Original — routes each chat query to only the relevant topics, and searches that layer stack starting from the least detail, loading more only when it's actually needed.
 
