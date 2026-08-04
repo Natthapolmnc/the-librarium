@@ -40,7 +40,7 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
+
       - name: Update manifest version
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
@@ -57,7 +57,7 @@ jobs:
           "
 
       - name: Update versions.json
-        run: node scripts/update-versions.mjs
+        run: node scripts/version-update.mjs
 
       - name: Build plugin
         run: pnpm run build
