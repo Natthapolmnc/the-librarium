@@ -1,12 +1,17 @@
 <div align="center">
 
-<img src="icon.png" width="200">
+<img src="assets/librarium-logo.png" width="180">
 
 # The Librarium
 
 A local LLM chat orchestrator for Obsidian powered by Ollama.
 
+<a href="https://ko-fi.com/natthapolmnc">
+  <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support The Librarium on Ko-fi">
+</a>
+
 </div>
+
 
 **The Librarium** is a local-LLM chat orchestrator for [Obsidian](https://obsidian.md), backed by [Ollama](https://ollama.com). It keeps topic-separated memory as a fixed stack of progressively more detailed layers — from a quick Overview down to a Comprehensive Summary, plus the raw Original — routes each chat query to only the relevant topics, and searches that layer stack starting from the least detail, loading more only when it's actually needed.
 
@@ -260,6 +265,15 @@ Concretely, clicking Cancel stops queuing new work immediately and discards what
 ## ❤️ Support The Librarium
 
 The Librarium is completely free and open source. If it has helped improve your workflow, consider supporting its continued development.
+
+Your support helps maintain the project, improve features, and continue building better local-first AI tools.
+
+<p align="center">
+  <a href="https://ko-fi.com/natthapolmnc">
+    <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support The Librarium on Ko-fi">
+  </a>
+</p>
+
 
 ## License
 
