@@ -10,10 +10,6 @@
   Give your local AI persistent, scalable memory through hierarchical context retrieval.
 </p>
 
-<a href="https://ko-fi.com/natthapolmnc">
-  <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support The Librarium on Ko-fi">
-</a>
-
 </div>
 
 ---
