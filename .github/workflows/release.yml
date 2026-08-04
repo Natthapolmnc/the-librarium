@@ -7,7 +7,7 @@ name: Release Obsidian plugin
 on:
   push:
     tags:
-      - "*"
+      - "pre:*"
 
 permissions:
   contents: write
@@ -19,11 +19,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
   build-and-release:
     name: Build and Release
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/pre:}"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          echo "Release version: $VERSION"
+
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -43,7 +54,7 @@ jobs:
 
       - name: Update manifest version
         run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
+          VERSION="${{ steps.version.outputs.version }}"
           VERSION="${VERSION#v}"
 
           node -e "
@@ -58,7 +69,7 @@ jobs:
 
       - name: Update version files
         run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
+          VERSION="${{ steps.version.outputs.version }}"
           VERSION="${VERSION#v}"
 
           node scripts/version-update.mjs "$VERSION"
@@ -66,17 +77,34 @@ jobs:
       - name: Build plugin
         run: pnpm run build
 
-      - name: Verify manifest version matches tag
+      - name: Verify manifest version
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          TAG="${TAG#v}"
+          VERSION="${{ steps.version.outputs.version }}"
 
           MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
 
-          if [ "$TAG" != "$MANIFEST_VERSION" ]; then
-            echo "Tag ($TAG) does not match manifest.json version ($MANIFEST_VERSION)"
+          if [ "$VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "Version mismatch!"
+            echo "Tag: $VERSION"
+            echo "Manifest: $MANIFEST_VERSION"
             exit 1
           fi
+
+      - name: Commit version update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add manifest.json versions.json
+
+          git commit -m "chore: release ${{ steps.version.outputs.version }}" || echo "No changes"
+
+      - name: Create release tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          git tag "$VERSION"
+          git push origin "$VERSION"
 
       - name: Verify release files exist
         run: |
@@ -93,8 +121,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: v${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
+          name: v${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
           generate_release_notes: true
           files: |
             main.js
