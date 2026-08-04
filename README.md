@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/librarium-logo.png" width="200">
+<img src="icon.png" width="200">
 
 # The Librarium
 
