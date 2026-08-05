@@ -74,9 +74,6 @@ jobs:
 
           node scripts/version-update.mjs "$VERSION"
 
-      - name: Build plugin
-        run: pnpm run build
-
       - name: Verify manifest version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
@@ -117,6 +114,9 @@ jobs:
           else
             echo "No styles.css found, continuing"
           fi
+
+      - name: Build plugin
+        run: pnpm run build
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
