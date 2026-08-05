@@ -93,6 +93,19 @@ jobs:
       - name: Build plugin
         run: pnpm run build
 
+      - name: Verify release files exist
+        run: |
+          test -f main.js
+          test -f manifest.json
+          test -f versions.json
+
+          if [ -f styles.css ]; then
+            echo "styles.css found"
+          else
+            echo "No styles.css found, continuing"
+          fi
+
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -105,17 +118,6 @@ jobs:
             versions.json
             styles.css
 
-      - name: Verify release files exist
-        run: |
-          test -f main.js
-          test -f manifest.json
-          test -f versions.json
-
-          if [ -f styles.css ]; then
-            echo "styles.css found"
-          else
-            echo "No styles.css found, continuing"
-          fi
 
       - name: Generate build attestation
         uses: actions/attest-build-provenance@v2
