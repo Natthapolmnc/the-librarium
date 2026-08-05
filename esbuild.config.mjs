@@ -2,7 +2,10 @@ import esbuild from "esbuild";
 import process from "process";
 import { builtinModules as builtins } from "node:module";
 
-const banner = `/* Ollama Orchestrator - built ${new Date().toISOString()} */`;
+// Static banner — no timestamp. A timestamp here makes every build
+// byte-different even from identical source/dependencies, which breaks
+// reproducible-build verification (e.g. Obsidian's release-asset check).
+const banner = `/* The Librarium (Ollama Orchestrator) */`;
 
 const prod = process.argv[2] === "production";
 
