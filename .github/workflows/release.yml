@@ -81,11 +81,13 @@ jobs:
 
           git commit -m "chore: release ${{ steps.version.outputs.version }}" || echo "No changes"
 
-      - name: Create release tag
+      - name: Create and push release
         run: |
           VERSION="${{ steps.version.outputs.version }}"
 
           git tag "$VERSION"
+
+          git push origin HEAD
           git push origin "$VERSION"
 
       - name: Build plugin
