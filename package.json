@@ -1,6 +1,6 @@
 {
   "name": "the-librarium",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "The Librarium — a local-LLM (Ollama) chat orchestrator for Obsidian with topic-based memory, note-memory mirrors, and hierarchical document summarization.",
   "main": "main.js",
   "author": "natthapolmnc",
